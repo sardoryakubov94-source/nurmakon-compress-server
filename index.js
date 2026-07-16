@@ -95,7 +95,7 @@ app.post('/compressVideo', (req, res) => {
           .videoFilters(`scale='min(${MAX_DIM},iw)':'min(${MAX_DIM},ih)':force_original_aspect_ratio=decrease`)
           .videoBitrate(TARGET_VIDEO_BITRATE)
           .audioBitrate(TARGET_AUDIO_BITRATE)
-          .outputOptions(['-preset veryfast', '-movflags +faststart', '-c:v libx264', '-c:a aac', '-pix_fmt yuv420p'])
+          .outputOptions(['-preset ultrafast', '-movflags +faststart', '-c:v libx264', '-c:a aac', '-pix_fmt yuv420p'])
           .on('error', reject)
           .on('end', resolve)
           .save(outputPath);
