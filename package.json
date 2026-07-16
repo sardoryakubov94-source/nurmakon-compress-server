@@ -2,7 +2,7 @@
   "name": "nurmakon-compress-server",
   "description": "NurMakon — serverda video siqish (ffmpeg) va Supabase'ga yuklash (Render uchun)",
   "version": "1.0.0",
-  "engines": { "node": "20.x" },
+  "engines": { "node": "22.x" },
   "main": "index.js",
   "private": true,
   "scripts": {
