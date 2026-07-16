@@ -102,7 +102,9 @@ app.post('/compressVideo', (req, res) => {
       });
 
       // ---- Supabase Storage'ga yuklash ----
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+      });
       const fileBuffer = fs.readFileSync(outputPath);
       const objectPath = `${crypto.randomUUID()}.mp4`;
       const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(objectPath, fileBuffer, {
@@ -125,6 +127,16 @@ app.post('/compressVideo', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`NurMakon compress server ${PORT}-portda ishga tushdi`);
+});
+
+// ---- Xavfsizlik to'sig'i: bitta so'rovda kutilmagan xatolik butun serverni
+// "qulatib" qo'ymasin (server qayta ishga tushishi kerak bo'lib, boshqa
+// foydalanuvchilar ham navbatda kutib qolishiga sabab bo'lardi). ----
+process.on('uncaughtException', (err) => {
+  console.error('Kutilmagan xatolik (jarayon davom etadi):', err);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('Kutilmagan promise xatoligi (jarayon davom etadi):', err);
 });
 
 /* ============================================================
