@@ -29,8 +29,8 @@ const SUPABASE_BUCKET = 'Videos';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 const MAX_UPLOAD_MB = 120;
-const MAX_DIM = 640;
-const TARGET_VIDEO_BITRATE = '900k';
+const MAX_DIM = 480;
+const TARGET_VIDEO_BITRATE = '700k';
 const TARGET_AUDIO_BITRATE = '96k';
 const PORT = process.env.PORT || 3000;
 
@@ -100,7 +100,7 @@ app.post('/compressVideo', (req, res) => {
           .videoFilters(`scale='min(${MAX_DIM},iw)':'min(${MAX_DIM},ih)':force_original_aspect_ratio=decrease`)
           .videoBitrate(TARGET_VIDEO_BITRATE)
           .audioBitrate(TARGET_AUDIO_BITRATE)
-          .outputOptions(['-preset ultrafast', '-movflags +faststart', '-c:v libx264', '-c:a aac', '-pix_fmt yuv420p'])
+          .outputOptions(['-preset ultrafast', '-r 24', '-movflags +faststart', '-c:v libx264', '-c:a aac', '-pix_fmt yuv420p'])
           .on('error', reject)
           .on('end', resolve)
           .save(outputPath);
