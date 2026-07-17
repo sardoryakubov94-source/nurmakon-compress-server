@@ -55,6 +55,8 @@ app.options('/compressVideo', (req, res) => {
 
 app.post('/compressVideo', (req, res) => {
   setCors(res);
+  const reqId = crypto.randomUUID().slice(0, 8);
+  console.log(`[${reqId}] Yangi so'rov keldi`);
 
   if (!SUPABASE_SERVICE_KEY) {
     res.status(500).json({ error: 'SUPABASE_SERVICE_KEY sozlanmagan (Render Environment Variables)' });
@@ -77,6 +79,7 @@ app.post('/compressVideo', (req, res) => {
 
   busboy.on('file', (_name, stream) => {
     gotFile = true;
+    console.log(`[${reqId}] Fayl qabul qilinmoqda...`);
     writeStream = fs.createWriteStream(inputPath);
     writeDone = new Promise((resolve) => writeStream.on('close', resolve));
     stream.on('limit', () => { tooBig = true; stream.unpipe(writeStream); writeStream.end(); });
@@ -87,9 +90,11 @@ app.post('/compressVideo', (req, res) => {
     try {
       if (!gotFile) { res.status(400).json({ error: 'Video fayl topilmadi' }); return; }
       await writeDone;
+      console.log(`[${reqId}] Yuklash tugadi, ffmpeg boshlanmoqda...`);
       if (tooBig) { throw new Error(`Video ${MAX_UPLOAD_MB}MB dan katta bo'lmasligi kerak`); }
 
       // ---- ffmpeg bilan siqish ----
+      const ffmpegStart = Date.now();
       await new Promise((resolve, reject) => {
         ffmpeg(inputPath)
           .videoFilters(`scale='min(${MAX_DIM},iw)':'min(${MAX_DIM},ih)':force_original_aspect_ratio=decrease`)
@@ -100,8 +105,10 @@ app.post('/compressVideo', (req, res) => {
           .on('end', resolve)
           .save(outputPath);
       });
+      console.log(`[${reqId}] ffmpeg tugadi (${((Date.now()-ffmpegStart)/1000).toFixed(1)}s), Supabase'ga yuklanmoqda...`);
 
       // ---- Supabase Storage'ga yuklash ----
+      const supabaseStart = Date.now();
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
         auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
       });
@@ -112,9 +119,10 @@ app.post('/compressVideo', (req, res) => {
       });
       if (error) throw error;
       const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(objectPath);
+      console.log(`[${reqId}] Supabase yuklash tugadi (${((Date.now()-supabaseStart)/1000).toFixed(1)}s). Tayyor!`);
       res.status(200).json({ url: data.publicUrl });
     } catch (err) {
-      console.error('compressVideo xatosi:', err);
+      console.error(`[${reqId}] compressVideo xatosi:`, err);
       res.status(500).json({ error: (err && err.message) || 'Videoni qayta ishlashda xatolik' });
     } finally {
       fs.unlink(inputPath, () => {});
