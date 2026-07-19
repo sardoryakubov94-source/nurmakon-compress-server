@@ -1,0 +1,19 @@
+{
+  "name": "nurmakon-compress-server",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "busboy": "^1.6.0",
+    "express": "^4.19.2",
+    "ffmpeg-static": "^5.2.0",
+    "fluent-ffmpeg": "^2.1.3"
+  }
+}
